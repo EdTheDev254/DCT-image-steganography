@@ -69,17 +69,21 @@ class DCTSteganography:
         
         # Warning Message Test
         if len(full_binary_payload) > len(dct_blocks):
-            message_character_count = len(message)
-            max_characters_approx = (len(dct_blocks) - self.LENGTH_HEADER_BITS) // 8
-            
-            error_message = (
-                f"Message is too long for this image.\n\n"
-                f"  Your message has {message_character_count} characters.\n  Use of special characters counts more bit(s).\n"
-                f"  This image can only hold about {max_characters_approx} characters.\n\n"
-                f"Please use a larger image or shorten your message."
-            )
-            raise ValueError(error_message)
+                    # Calculate the ACTUAL size of the message in bytes using UTF-8, It was Being wronly estimated.
+                    message_byte_count = len(message.encode('utf-8'))
 
+
+                    #Calculate the image's true capacity in bytes.
+                    image_capacity_bytes = (len(dct_blocks) - self.LENGTH_HEADER_BITS) // 8
+                    error_message = (
+                        f"Message is too large for this image.\n\n"
+                        f"  Image Capacity:      {image_capacity_bytes} bytes\n"
+                        f"  Your Message's Size: {message_byte_count} bytes\n\n"
+                        f"Note: Your message size is larger than its character count maybe because\n"
+                        f"special characters and emojis take up more space(double check)."
+                    )
+                    raise ValueError(error_message)
+        
         payload_index = 0
         for i in range(len(full_binary_payload)):
             quantized_block = np.round(dct_blocks[i] / self.quantization_table).astype(np.int32)
