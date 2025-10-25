@@ -74,7 +74,7 @@ class DCTSteganography:
             
             error_message = (
                 f"Message is too long for this image.\n\n"
-                f"  Your message has {message_character_count} characters.\n"
+                f"  Your message has {message_character_count} characters.\n  Use of special characters counts more bit(s).\n"
                 f"  This image can only hold about {max_characters_approx} characters.\n\n"
                 f"Please use a larger image or shorten your message."
             )
