@@ -79,8 +79,8 @@ class DCTSteganography:
                         f"Message is too large for this image.\n\n"
                         f"  Image Capacity:      {image_capacity_bytes} bytes\n"
                         f"  Your Message's Size: {message_byte_count} bytes\n\n"
-                        f"Note: Your message size is larger than its character count maybe because\n"
-                        f"special characters and emojis take up more space(double check)."
+                        f"Note: Your message size is larger than its character count or maybe because you're using\n"
+                        f"special characters and emojis which take up more space(double check)."
                     )
                     raise ValueError(error_message)
         
