@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 
+
 class DCTSteganography:
     def __init__(self):
         self.quantization_table = np.array([
@@ -22,6 +23,23 @@ class DCTSteganography:
     def _message_to_binary(self, message):
         message_bytes = message.encode('utf-8')
         return ''.join(format(byte, '08b') for byte in message_bytes)
+    
+    #for encryption
+    def _cipher_message(self, text, password, decrypt=False):
+        if not password: 
+            return text
+        
+        result = []
+
+        for i, char in enumerate(text):
+            shift = ord(password[i % len(password)])
+            if decrypt: 
+                shift = -shift
+
+            result.append(chr((ord(char) + shift) % 1114111))
+        return ''.join(result)
+    
+
 
     def _binary_to_message(self, binary_message):
         byte_values = []
@@ -55,7 +73,8 @@ class DCTSteganography:
                 block_index += 1
         return reconstructed_image + 128
 
-    def hide_message(self, image_path, message, output_path):
+    # added password arg and encryption 
+    def hide_message(self, image_path, message, output_path, password=""): # added password arg
         img = cv2.imread(image_path, cv2.IMREAD_COLOR)
         if img is None: raise FileNotFoundError("Image not found.")
 
@@ -64,6 +83,10 @@ class DCTSteganography:
         
         ycbcr_img = cv2.cvtColor(padded_img, cv2.COLOR_BGR2YCrCb)
         y_channel, cr_channel, cb_channel = cv2.split(ycbcr_img)
+
+        # Encrypt the message if password is given
+        if password:
+            message = self._cipher_message(message, password, decrypt=False)
 
         binary_message = self._message_to_binary(message)
         message_bit_length = len(binary_message)
@@ -75,20 +98,19 @@ class DCTSteganography:
         
         # Warning Message Test
         if len(full_binary_payload) > len(dct_blocks):
-                    # Calculate the ACTUAL size of the message in bytes using UTF-8, It was Being wronly estimated.
-                    message_byte_count = len(message.encode('utf-8'))
+            # Calculate the ACTUAL size of the message in bytes using UTF-8, It was Being wronly estimated.
+            message_byte_count = len(message.encode('utf-8'))
 
-
-                    #Calculate the image's true capacity in bytes.
-                    image_capacity_bytes = (len(dct_blocks) - self.LENGTH_HEADER_BITS) // 8
-                    error_message = (
-                        f"Message is too large for this image.\n\n"
-                        f"  Image Capacity:      {image_capacity_bytes} bytes\n"
-                        f"  Your Message's Size: {message_byte_count} bytes\n\n"
-                        f"Note: Your message size is larger than its character count or maybe because you're using\n"
-                        f"special characters and emojis which take up more space(double check)."
-                    )
-                    raise ValueError(error_message)
+            #Calculate the image's true capacity in bytes.
+            image_capacity_bytes = (len(dct_blocks) - self.LENGTH_HEADER_BITS) // 8
+            error_message = (
+                f"Message is too large for this image.\n\n"
+                f"  Image Capacity:      {image_capacity_bytes} bytes\n"
+                f"  Your Message's Size: {message_byte_count} bytes\n\n"
+                f"Note: Your message size is larger than its character count or maybe because you're using\n"
+                f"special characters and emojis which take up more space(double check)."
+            )
+            raise ValueError(error_message)
         
         payload_index = 0
         for i in range(len(full_binary_payload)):
@@ -110,7 +132,8 @@ class DCTSteganography:
         cv2.imwrite(output_path, stego_img_bgr, [cv2.IMWRITE_PNG_COMPRESSION, 3])
         print(f"\nSUCCESS: Message successfully hidden in '{output_path}'")
 
-    def reveal_message(self, image_path):
+
+    def reveal_message(self, image_path, password=""): # added password arg
         stego_img = cv2.imread(image_path, cv2.IMREAD_COLOR)
         if stego_img is None: raise FileNotFoundError("Stego image not found.")
 
@@ -138,7 +161,17 @@ class DCTSteganography:
             quantized_block = np.round(dct_blocks[block_index] / self.quantization_table).astype(np.int32)
             binary_message += str(quantized_block[2, 1] & 1)
 
-        return self._binary_to_message(binary_message)
+        decoded_message = self._binary_to_message(binary_message)
+
+        # Decrypt if password given
+        if decoded_message and password:
+            try:
+                decoded_message = self._cipher_message(decoded_message, password, decrypt=True)
+            except Exception:
+                return "Error: Wrong Password or Corrupt Data"
+        
+        return decoded_message
+    
 
     def _pad_image(self, img):
         h_orig, w_orig, _ = img.shape
@@ -179,6 +212,8 @@ class StegoAPP(ctk.CTk):
         self.hide_cover_path = ctk.StringVar()
         self.hide_output_path = ctk.StringVar()
         self.reveal_stego_path = ctk.StringVar()
+        self.hide_password = ctk.StringVar()
+        self.reveal_password = ctk.StringVar()
 
         self.setup_hide_ui()
         self.setup_reveal_ui()
@@ -194,6 +229,13 @@ class StegoAPP(ctk.CTk):
         
         btn_browse_cover = ctk.CTkButton(frame_cover, text="Browse", width=80, command=self.browse_cover_image)
         btn_browse_cover.pack(side="left", padx=10)
+
+        # Password Input 
+        frame_pwd = ctk.CTkFrame(self.tab_hide)
+        frame_pwd.pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(frame_pwd, text="Password (Optional):").pack(side="left", padx=10)
+        self.entry_pwd_hide = ctk.CTkEntry(frame_pwd, textvariable=self.hide_password, width=350, show="*", placeholder_text="Enter encryption password...")
+        self.entry_pwd_hide.pack(side="left", padx=10)
 
 
         lbl_msg = ctk.CTkLabel(self.tab_hide, text="Secret Message:", anchor="w")
@@ -239,6 +281,14 @@ class StegoAPP(ctk.CTk):
         btn_browse_stego = ctk.CTkButton(frame_stego, text="Browse", width=80, command=self.browse_stego_image)
         btn_browse_stego.pack(side="left", padx=10)
 
+        # Password Input
+        frame_pwd_rev = ctk.CTkFrame(self.tab_reveal)
+        frame_pwd_rev.pack(fill="x", padx=10, pady=5)
+        ctk.CTkLabel(frame_pwd_rev, text="Password (Optional):").pack(side="left", padx=10)
+        self.entry_pwd_rev = ctk.CTkEntry(frame_pwd_rev, textvariable=self.reveal_password, width=350, show="*", placeholder_text="Enter decryption password...")
+        self.entry_pwd_rev.pack(side="left", padx=10)
+
+
         self.btn_reveal = ctk.CTkButton(self.tab_reveal, text="DECODE & REVEAL", height=40, fg_color="#D35B58", hover_color="#C74B48", command=self.process_reveal)
         self.btn_reveal.pack(fill="x", padx=50, pady=10)
 
@@ -263,6 +313,7 @@ class StegoAPP(ctk.CTk):
         cover_path = self.hide_cover_path.get()
         output_path = self.hide_output_path.get()
         message = self.txt_message.get("1.0", "end-1c") # Get text excluding auto-newline
+        password = self.hide_password.get()
 
 
         if not cover_path:
@@ -277,11 +328,12 @@ class StegoAPP(ctk.CTk):
 
         # my fav try and except powers
         try:
-            self.processor.hide_message(cover_path, message, output_path)
+            self.processor.hide_message(cover_path, message, output_path, password)
             messagebox.showinfo("Success", f"Message hidden successfully!\nSaved to: {output_path}")
             
             #clear the message after success
             self.txt_message.delete("1.0", "end")
+            self.entry_pwd_hide.delete(0, "end") # clear pass field
             
         except ValueError as e:
             #if message is too large
@@ -294,6 +346,7 @@ class StegoAPP(ctk.CTk):
         #print("Reveal button clicked!!")
 
         stego_path = self.reveal_stego_path.get()
+        password = self.reveal_password.get()
 
         if not stego_path:
             messagebox.showwarning("Missing Input", "Please select a Stego Image to decode. please or else!!")
