@@ -178,8 +178,10 @@ class StegoAPP(ctk.CTk):
         # UI Var(s)
         self.hide_cover_path = ctk.StringVar()
         self.hide_output_path = ctk.StringVar()
+        self.reveal_stego_path = ctk.StringVar()
 
         self.setup_hide_ui()
+        self.setup_reveal_ui()
 
 
     def setup_hide_ui(self):
@@ -225,6 +227,41 @@ class StegoAPP(ctk.CTk):
     def process_hide(self):
         print("Hide button clicked.")
 
+
+
+    def setup_reveal_ui(self):
+
+        frame_stego = ctk.CTkFrame(self.tab_reveal)
+        frame_stego.pack(fill="x", padx=10, pady=20)
+        ctk.CTkLabel(frame_stego, text="Stego Image:").pack(side="left", padx=10)
+
+        self.entry_stego = ctk.CTkEntry(frame_stego, textvariable=self.reveal_stego_path, width=350, placeholder_text="Select image with hidden text...")
+        self.entry_stego.pack(side="left", padx=10)
+        
+        btn_browse_stego = ctk.CTkButton(frame_stego, text="Browse", width=80, command=self.browse_stego_image)
+        btn_browse_stego.pack(side="left", padx=10)
+
+        self.btn_reveal = ctk.CTkButton(self.tab_reveal, text="DECODE & REVEAL", height=40, fg_color="#D35B58", hover_color="#C74B48", command=self.process_reveal)
+        self.btn_reveal.pack(fill="x", padx=50, pady=10)
+
+        lbl_result = ctk.CTkLabel(self.tab_reveal, text="Decoded Message Content:", anchor="w")
+        lbl_result.pack(fill="x", padx=20, pady=(20, 0))
+
+        self.txt_result = ctk.CTkTextbox(self.tab_reveal, height=200)
+        self.txt_result.pack(fill="x", padx=20, pady=5)
+
+        self.txt_result.configure(state="disabled") # Make read-only initially
+
+    def browse_stego_image(self):
+        filename = filedialog.askopenfilename(filetypes=[("Images", "*.png;*.jpg;*.jpeg;*.bmp")])
+
+        if filename:
+            self.reveal_stego_path.set(filename)
+
+    def process_reveal(self):
+
+        print("Reveal button clicked!!")
+        
 
 # Interactive menu.
 if __name__ == '__main__':
