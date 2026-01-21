@@ -224,8 +224,6 @@ class StegoAPP(ctk.CTk):
         if filename:
             self.hide_output_path.set(filename)
 
-    def process_hide(self):
-        print("Hide button clicked.")
 
 
 
@@ -258,10 +256,13 @@ class StegoAPP(ctk.CTk):
         if filename:
             self.reveal_stego_path.set(filename)
 
+    def process_hide(self):
+        print("Hide button clicked.")
+
     def process_reveal(self):
 
         print("Reveal button clicked!!")
-        
+
 
 # Interactive menu.
 if __name__ == '__main__':
