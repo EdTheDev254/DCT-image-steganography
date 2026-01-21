@@ -168,11 +168,62 @@ class StegoAPP(ctk.CTk):
         self.tab_reveal = self.tab_view.add("Reveal Message")
 
         #placeholder
-        label_hide = ctk.CTkLabel(self.tab_hide, text="Hide Message UI", font=("Arial", 20))
-        label_hide.pack(pady=100)
+        # label_hide = ctk.CTkLabel(self.tab_hide, text="Hide Message UI", font=("Arial", 20))
+        # label_hide.pack(pady=100)
 
-        label_reveal = ctk.CTkLabel(self.tab_reveal, text="Reveal Message UI", font=("Arial", 20))
-        label_reveal.pack(pady=100)
+        # label_reveal = ctk.CTkLabel(self.tab_reveal, text="Reveal Message UI", font=("Arial", 20))
+        # label_reveal.pack(pady=100)
+
+
+        # UI Var(s)
+        self.hide_cover_path = ctk.StringVar()
+        self.hide_output_path = ctk.StringVar()
+
+        self.setup_hide_ui()
+
+
+    def setup_hide_ui(self):
+        frame_cover = ctk.CTkFrame(self.tab_hide)
+        frame_cover.pack(fill="x", padx=10, pady=10)
+
+        ctk.CTkLabel(frame_cover, text="Cover Image:").pack(side="left", padx=10)
+        self.entry_cover = ctk.CTkEntry(frame_cover, textvariable=self.hide_cover_path, width=350, placeholder_text="Select an image...")
+        self.entry_cover.pack(side="left", padx=10)
+        
+        btn_browse_cover = ctk.CTkButton(frame_cover, text="Browse", width=80, command=self.browse_cover_image)
+        btn_browse_cover.pack(side="left", padx=10)
+
+
+        lbl_msg = ctk.CTkLabel(self.tab_hide, text="Secret Message:", anchor="w")
+        lbl_msg.pack(fill="x", padx=20, pady=(10, 0))
+
+        self.txt_message = ctk.CTkTextbox(self.tab_hide, height=150)
+        self.txt_message.pack(fill="x", padx=20, pady=5)
+
+        frame_out = ctk.CTkFrame(self.tab_hide)
+        frame_out.pack(fill="x", padx=10, pady=10)
+
+        ctk.CTkLabel(frame_out, text="Save Output:").pack(side="left", padx=10)
+        self.entry_output = ctk.CTkEntry(frame_out, textvariable=self.hide_output_path, width=350, placeholder_text="Save location...")
+        self.entry_output.pack(side="left", padx=10)
+
+        btn_browse_out = ctk.CTkButton(frame_out, text="Browse", width=80, command=self.browse_output_path)
+        btn_browse_out.pack(side="left", padx=10)
+        self.btn_hide = ctk.CTkButton(self.tab_hide, text="ENCODE & HIDE MESSAGE", height=40, fg_color="green", hover_color="darkgreen", command=self.process_hide)
+        self.btn_hide.pack(fill="x", padx=50, pady=20)
+    
+    def browse_cover_image(self):
+        filename = filedialog.askopenfilename(filetypes=[("Images", "*.png;*.jpg;*.jpeg;*.bmp")])
+        if filename:
+            self.hide_cover_path.set(filename)
+
+    def browse_output_path(self):
+        filename = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG Image", "*.png")])
+        if filename:
+            self.hide_output_path.set(filename)
+
+    def process_hide(self):
+        print("Hide button clicked.")
 
 
 # Interactive menu.
