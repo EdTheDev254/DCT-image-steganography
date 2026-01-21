@@ -3,6 +3,12 @@ import numpy as np
 from scipy.fftpack import dct, idct
 import os
 
+##UI Imports
+import customtkinter as ctk
+import tkinter as tk
+from tkinter import filedialog, messagebox
+
+
 class DCTSteganography:
     def __init__(self):
         self.quantization_table = np.array([
