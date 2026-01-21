@@ -146,57 +146,89 @@ class DCTSteganography:
         w_pad = (8 - w_orig % 8) % 8
         return np.pad(img, ((0, h_pad), (0, w_pad), (0, 0)), mode='constant', constant_values=0)
 
+
+class StegoAPP(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("dark-blue")
+
+        self.title("DCT Stego APP")
+        self.geometry("700x500")
+        self.resizable(False, False)
+
+        #init
+        self.processor = DCTSteganography()
+
+        self.tab_view = ctk.CTkTabview(self, width=650, height=450)
+        self.tab_view.pack(padx=20, pady=20)
+
+        self.tab_hide = self.tab_view.add("Hide Message")
+        self.tab_reveal = self.tab_view.add("Reveal Message")
+
+        #placeholder
+        label_hide = ctk.CTkLabel(self.tab_hide, text="Hide Message UI", font=("Arial", 20))
+        label_hide.pack(pady=100)
+
+        label_reveal = ctk.CTkLabel(self.tab_reveal, text="Reveal Message UI", font=("Arial", 20))
+        label_reveal.pack(pady=100)
+
+
 # Interactive menu.
 if __name__ == '__main__':
-    steganographer = DCTSteganography()
-    try:
-        script_dir = os.path.dirname(os.path.realpath(__file__))
-        MESSAGE_FILENAME = "message.txt"
-        MESSAGE_FILE_PATH = os.path.join(script_dir, MESSAGE_FILENAME)
-    except NameError:
-        MESSAGE_FILENAME = "message.txt"
-        MESSAGE_FILE_PATH = MESSAGE_FILENAME
+    # steganographer = DCTSteganography()
+    # try:
+    #     script_dir = os.path.dirname(os.path.realpath(__file__))
+    #     MESSAGE_FILENAME = "message.txt"
+    #     MESSAGE_FILE_PATH = os.path.join(script_dir, MESSAGE_FILENAME)
+    # except NameError:
+    #     MESSAGE_FILENAME = "message.txt"
+    #     MESSAGE_FILE_PATH = MESSAGE_FILENAME
 
-    while True:
-        print("\n--- DCT Steganography Menu ---")
-        print(f"1. Hide message from '{MESSAGE_FILENAME}' (Encode)")
-        print("2. Reveal a message (Decode)")
-        print("3. Exit")
-        choice = input("Enter your choice (1, 2, or 3): ")
+    # while True:
+    #     print("\n--- DCT Steganography Menu ---")
+    #     print(f"1. Hide message from '{MESSAGE_FILENAME}' (Encode)")
+    #     print("2. Reveal a message (Decode)")
+    #     print("3. Exit")
+    #     choice = input("Enter your choice (1, 2, or 3): ")
 
-        if choice == '1':
-            try:
-                cover_path = input("Enter path to the cover image (e.g., cover.png): ")
-                if not os.path.exists(cover_path): print("ERROR: Cover image not found."); continue
+    #     if choice == '1':
+    #         try:
+    #             cover_path = input("Enter path to the cover image (e.g., cover.png): ")
+    #             if not os.path.exists(cover_path): print("ERROR: Cover image not found."); continue
                 
-                print(f"Attempting to load message from '{MESSAGE_FILE_PATH}'...")
-                if not os.path.exists(MESSAGE_FILE_PATH): print(f"ERROR: Message file '{MESSAGE_FILENAME}' not found."); continue
+    #             print(f"Attempting to load message from '{MESSAGE_FILE_PATH}'...")
+    #             if not os.path.exists(MESSAGE_FILE_PATH): print(f"ERROR: Message file '{MESSAGE_FILENAME}' not found."); continue
 
-                with open(MESSAGE_FILE_PATH, 'r', encoding='utf-8') as f: message = f.read()
-                if not message: print("ERROR: The message file is empty."); continue
+    #             with open(MESSAGE_FILE_PATH, 'r', encoding='utf-8') as f: message = f.read()
+    #             if not message: print("ERROR: The message file is empty."); continue
 
-                stego_path = input("Enter the output path for the stego-image (e.g., stego.png): ")
-                steganographer.hide_message(cover_path, message, stego_path)
-            except (FileNotFoundError, ValueError) as e: print(f"\nERROR: {e}")
-            except Exception as e: print(f"\nAn unexpected error occurred: {e}")
+    #             stego_path = input("Enter the output path for the stego-image (e.g., stego.png): ")
+    #             steganographer.hide_message(cover_path, message, stego_path)
+    #         except (FileNotFoundError, ValueError) as e: print(f"\nERROR: {e}")
+    #         except Exception as e: print(f"\nAn unexpected error occurred: {e}")
         
-        elif choice == '2':
-            try:
-                stego_path = input("Enter path to the stego-image (e.g., stego.png): ")
-                if not os.path.exists(stego_path): print("ERROR: Stego-image not found."); continue
-                revealed_message = steganographer.reveal_message(stego_path)
-                if revealed_message is not None:
-                    print("\n---------------------------------")
-                    print("SUCCESS: Revealed message found!")
-                    print("---------------------------------")
-                    print(revealed_message)
-                    print("---------------------------------")
-                else:
-                    print("\nINFO: No hidden message found or the data is corrupt.")
-            except FileNotFoundError as e: print(f"\nERROR: {e}")
-            except Exception as e: print(f"\nAn unexpected error occurred: {e}")
+    #     elif choice == '2':
+    #         try:
+    #             stego_path = input("Enter path to the stego-image (e.g., stego.png): ")
+    #             if not os.path.exists(stego_path): print("ERROR: Stego-image not found."); continue
+    #             revealed_message = steganographer.reveal_message(stego_path)
+    #             if revealed_message is not None:
+    #                 print("\n---------------------------------")
+    #                 print("SUCCESS: Revealed message found!")
+    #                 print("---------------------------------")
+    #                 print(revealed_message)
+    #                 print("---------------------------------")
+    #             else:
+    #                 print("\nINFO: No hidden message found or the data is corrupt.")
+    #         except FileNotFoundError as e: print(f"\nERROR: {e}")
+    #         except Exception as e: print(f"\nAn unexpected error occurred: {e}")
             
-        elif choice == '3':
-            print("Exiting program. Goodbye!"); break
-        else:
-            print("Invalid choice. Please enter 1, 2, or 3.")
+    #     elif choice == '3':
+    #         print("Exiting program. Goodbye!"); break
+    #     else:
+    #         print("Invalid choice. Please enter 1, 2, or 3.")
+
+    app = StegoAPP()
+    app.mainloop()
