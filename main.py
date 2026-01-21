@@ -257,11 +257,66 @@ class StegoAPP(ctk.CTk):
             self.reveal_stego_path.set(filename)
 
     def process_hide(self):
-        print("Hide button clicked.")
+        #print("Hide button clicked.")
+
+        # get the input 
+        cover_path = self.hide_cover_path.get()
+        output_path = self.hide_output_path.get()
+        message = self.txt_message.get("1.0", "end-1c") # Get text excluding auto-newline
+
+
+        if not cover_path:
+            messagebox.showwarning("Missing Input", "Please select a Cover Image.")
+            return
+        if not output_path:
+            messagebox.showwarning("Missing Input", "Please select where to save the Output.")
+            return
+        if not message.strip():
+            messagebox.showwarning("Missing Input", "Please enter a secret message.")
+            return
+
+        # my fav try and except powers
+        try:
+            self.processor.hide_message(cover_path, message, output_path)
+            messagebox.showinfo("Success", f"Message hidden successfully!\nSaved to: {output_path}")
+            
+            #clear the message after success
+            self.txt_message.delete("1.0", "end")
+            
+        except ValueError as e:
+            #if message is too large
+            messagebox.showerror("Capacity Error", str(e))
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred:\n{str(e)}")
 
     def process_reveal(self):
 
-        print("Reveal button clicked!!")
+        #print("Reveal button clicked!!")
+
+        stego_path = self.reveal_stego_path.get()
+
+        if not stego_path:
+            messagebox.showwarning("Missing Input", "Please select a Stego Image to decode. please or else!!")
+            return
+
+        try:
+            self.txt_result.configure(state="normal") # we wanna write in it
+            self.txt_result.delete("1.0", "end")
+            
+            revealed_msg = self.processor.reveal_message(stego_path)
+
+            if revealed_msg:
+                self.txt_result.insert("1.0", revealed_msg)
+                messagebox.showinfo("Success", "Hidden message found, Here you go Champ!")
+            else:
+                self.txt_result.insert("1.0", "[No hidden message found or data is corrupted]")
+                messagebox.showwarning("Result", "No hidden message detected.")
+            
+            # Disable text box again so user can't type in it haha
+            self.txt_result.configure(state="disabled")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred:\n{str(e)}")
 
 
 # Interactive menu.
