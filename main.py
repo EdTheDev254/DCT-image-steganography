@@ -356,7 +356,7 @@ class StegoAPP(ctk.CTk):
             self.txt_result.configure(state="normal") # we wanna write in it
             self.txt_result.delete("1.0", "end")
             
-            revealed_msg = self.processor.reveal_message(stego_path)
+            revealed_msg = self.processor.reveal_message(stego_path, password)
 
             if revealed_msg:
                 self.txt_result.insert("1.0", revealed_msg)
